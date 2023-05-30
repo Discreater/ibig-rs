@@ -96,6 +96,7 @@ mod shift;
 mod shift_ops;
 mod sign;
 mod ubig;
+pub mod bit;
 
 #[cfg(feature = "rand")]
 pub mod rand;

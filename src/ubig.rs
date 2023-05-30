@@ -2,7 +2,7 @@
 
 use self::Repr::*;
 use crate::{
-    arch::{ntt, word::Word},
+    arch::{ntt, word::{Word, WORD_BITS}},
     buffer::Buffer,
     math,
     primitive::WORD_BITS_USIZE,
@@ -77,6 +77,33 @@ impl UBig {
             Small(0) => &[],
             Small(word) => slice::from_ref(word),
             Large(buffer) => buffer,
+        }
+    }
+
+    
+    pub fn word(&self, index: usize) -> Word {
+        let words = self.as_words();
+        if index < words.len() {
+            words[index]
+        } else {
+            0
+        }
+    }
+
+    pub fn set_word(&mut self, index: usize, word: Word) {
+        // makesure the buffer is large enough
+        if self.bit_len() < index * WORD_BITS {
+            self.set_bit(index * WORD_BITS);
+        }
+        match std::mem::take(self).into_repr() {
+            Small(_) => {
+                debug_assert!(index == 0);
+                *self = UBig::from_word(word);
+            }
+            Large(mut buffer) => {
+                buffer[index] = word;
+                *self = UBig::from(buffer);
+            }
         }
     }
 
